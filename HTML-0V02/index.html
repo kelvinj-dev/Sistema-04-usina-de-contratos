@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SYS.00-RJS_FORGE-0V02 | Bloco de Protótipo</title>
+  <style>
+    :root { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --accent: #38bdf8; --border: #334155; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 12px; font-size: 14px; }
+    h1, h2, h3 { margin: 0 0 8px 0; color: var(--accent); }
+    .badge { background: #0284c7; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+    label { display: block; font-size: 11px; color: #94a3b8; margin-bottom: 2px; }
+    input, select { width: 100%; box-sizing: border-box; background: #0f172a; color: #fff; border: 1px solid var(--border); padding: 6px; border-radius: 4px; }
+    button { background: var(--accent); color: #0f172a; border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 6px; }
+    button.secondary { background: #475569; color: #fff; }
+    pre { background: #020617; padding: 10px; border-radius: 6px; overflow-x: auto; font-size: 12px; white-space: pre-wrap; border: 1px solid var(--border); }
+    .fleet-row { border-bottom: 1px dashed var(--border); padding-bottom: 8px; margin-bottom: 8px; }
+    @media print {
+      body { background: #fff; color: #000; }
+      .no-print { display: none !important; }
+      pre { background: #fff; color: #000; border: none; font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card no-print">
+    <h2>SYS.00-RJS_FORGE <span class="badge">Protótipo v0V02</span></h2>
+    <p style="margin:0; font-size:12px; color:#94a3b8;">Micro-Kernel Modular | Bloco de Protótipo Licenciado (Runtime Descartável)</p>
+  </div>
+
+  <!-- MÓDULO 1: PARÂMETROS DE PROJETO E LOGÍSTICA -->
+  <div class="card no-print">
+    <h3>1. Parâmetros de Projeto e Logística</h3>
+    <div class="grid">
+      <div>
+        <label>ID da Taxonomia (nVnn)</label>
+        <input type="text" id="taxId" value="VEN.01-HANGCHA-0V02" oninput="runKernel()">
+      </div>
+      <div>
+        <label>Nome do Cliente</label>
+        <input type="text" id="clientName" value="Cliente Exemplo Ltda" oninput="runKernel()">
+      </div>
+      <div>
+        <label>Duração (Meses)</label>
+        <input type="number" id="months" value="12" min="1" oninput="runKernel()">
+      </div>
+      <div>
+        <label>Logística Mensal da Frota (R$)</label>
+        <input type="number" id="logisticsMonthly" value="150.00" step="10" oninput="runKernel()">
+      </div>
+    </div>
+  </div>
+
+  <!-- MÓDULO 2: MATRIZ DINÂMICA DE FROTA -->
+  <div class="card no-print">
+    <h3>2. Inventário da Frota (Modelos e Quantidades Customizáveis)</h3>
+    <div id="fleetContainer"></div>
+    <button class="secondary" onclick="addVehicleGroup()">+ Adicionar Grupo de Modelo</button>
+  </div>
+
+  <!-- MÓDULO 3: MATRIZ DE SERVIÇOS (VISITAS, W1, W2, W3) -->
+  <div class="card no-print">
+    <h3>3. Matriz de Serviços (Contagens Anuais e Valores Unitários)</h3>
+    
+    <div class="fleet-row">
+      <strong>Visitas Periódicas (Total da Frota / Ano)</strong>
+      <div class="grid">
+        <div><label>Valor Unitário (R$)</label><input type="number" id="valVisit" value="200.00" oninput="runKernel()"></div>
+        <div><label>Visitas Anuais (Frota)</label><input type="number" id="cntVisit" value="36" oninput="runKernel()"></div>
+      </div>
+    </div>
+
+    <div class="fleet-row">
+      <strong>Corretiva W1 (Por Veículo / Ano)</strong>
+      <div class="grid">
+        <div><label>Valor Unitário (R$)</label><input type="number" id="valW1" value="250.00" oninput="runKernel()"></div>
+        <div><label>W1 Anual / Máquina</label><input type="number" id="cntW1" value="2" oninput="runKernel()"></div>
+      </div>
+    </div>
+
+    <div class="fleet-row">
+      <strong>Corretiva Intermediária W2 (Por Veículo / Ano)</strong>
+      <div class="grid">
+        <div><label>Valor Unitário (R$)</label><input type="number" id="valW2" value="400.00" oninput="runKernel()"></div>
+        <div><label>W2 Anual / Máquina (0 = Sob Demanda)</label><input type="number" id="cntW2" value="0" oninput="runKernel()"></div>
+      </div>
+    </div>
+
+    <div>
+      <strong>Preventiva W3 (Por Veículo / Ano - 6h/evento)</strong>
+      <div class="grid">
+        <div><label>Valor Unitário (R$)</label><input type="number" id="valW3" value="450.00" oninput="runKernel()"></div>
+        <div><label>W3 Anual / Máquina</label><input type="number" id="cntW3" value="3" oninput="runKernel()"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MÓDULO 4: CONTRATO COMPILADO E SAÍDA SOW -->
+  <div class="card">
+    <h3 class="no-print">4. Saída do Contrato Compilado e SOW</h3>
+    <pre id="contractOutput"></pre>
+    <div class="grid no-print">
+      <button onclick="window.print()">Imprimir / Salvar PDF</button>
+      <button class="secondary" onclick="toggleJson()">Alternar Estado JSON Bruto</button>
+    </div>
+    <pre id="jsonOutput" class="no-print" style="display:none; margin-top:8px;"></pre>
+  </div>
+
+<script>
+  // BLOCO ATÔMICO 1: REGISTRO DE ESTADO
+  let fleetGroups = [
+    { model: "Empilhadeira Hangcha Diesel", qty: 6 }
+  ];
+
+  function renderFleetInputs() {
+    const container = document.getElementById('fleetContainer');
+    container.innerHTML = '';
+    fleetGroups.forEach((group, idx) => {
+      container.innerHTML += `
+        <div class="grid fleet-row">
+          <div>
+            <label>Modelo do Veículo #${idx + 1}</label>
+            <input type="text" value="${group.model}" oninput="updateFleet(${idx}, 'model', this.value)">
+          </div>
+          <div style="display:flex; gap:4px; align-items:flex-end;">
+            <div style="flex:1;">
+              <label>Qtd</label>
+              <input type="number" value="${group.qty}" min="1" oninput="updateFleet(${idx}, 'qty', parseInt(this.value)||1)">
+            </div>
+            ${fleetGroups.length > 1 ? `<button class="secondary" style="width:auto; padding:6px 10px;" onclick="removeVehicleGroup(${idx})">X</button>` : ''}
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  function updateFleet(idx, field, val) {
+    fleetGroups[idx][field] = val;
+    runKernel();
+  }
+
+  function addVehicleGroup() {
+    fleetGroups.push({ model: "Novo Modelo de Empilhadeira", qty: 1 });
+    renderFleetInputs();
+    runKernel();
+  }
+
+  function removeVehicleGroup(idx) {
+    fleetGroups.splice(idx, 1);
+    renderFleetInputs();
+    runKernel();
+  }
+
+  // BLOCO ATÔMICO 2: MOTOR DE PRECIFICAÇÃO DETERMINÍSTICO (Função Pura)
+  function computeEngineState(input) {
+    const totalVehicles = input.fleet.reduce((acc, g) => acc + (parseInt(g.qty) || 0), 0);
+    const m = input.months || 12;
+
+    const visitAnnualEvents = input.services.visit.count;
+    const visitAnnualCost = visitAnnualEvents * input.services.visit.val;
+
+    const w1AnnualEvents = input.services.w1.count * totalVehicles;
+    const w1AnnualCost = w1AnnualEvents * input.services.w1.val;
+
+    const w2AnnualEvents = input.services.w2.count * totalVehicles;
+    const w2AnnualCost = w2AnnualEvents * input.services.w2.val;
+    const w2Included = input.services.w2.count > 0;
+
+    const w3AnnualEvents = input.services.w3.count * totalVehicles;
+    const w3AnnualCost = w3AnnualEvents * input.services.w3.val;
+    const w3AnnualHours = w3AnnualEvents * 6;
+
+    const annualLogistics = input.logisticsMonthly * m;
+    const annualTotal = visitAnnualCost + w1AnnualCost + w2AnnualCost + w3AnnualCost + annualLogistics;
+    const monthlyTotal = annualTotal / m;
+
+    return {
+      meta: { taxonomyId: input.taxId, client: input.clientName, months: m, license: "RJS-PROTOTYPE-V1" },
+      fleet: { groups: input.fleet, totalVehicles },
+      metrics: {
+        visitMonthlyPerMachine: visitAnnualCost / m / totalVehicles,
+        w1MonthlyPerMachine: w1AnnualCost / m / totalVehicles,
+        w2MonthlyPerMachine: w2AnnualCost / m / totalVehicles,
+        w3MonthlyPerMachine: w3AnnualCost / m / totalVehicles,
+        logisticsMonthlyPerMachine: input.logisticsMonthly / totalVehicles,
+        equivalentMonthlyPerMachine: monthlyTotal / totalVehicles,
+        annualPerMachine: annualTotal / totalVehicles,
+        MRR: monthlyTotal,
+        ARR: annualTotal,
+        annualLogistics,
+        events: { visitAnnualEvents, w1AnnualEvents, w2AnnualEvents, w3AnnualEvents, w3AnnualHours },
+        w2Included
+      },
+      rawRates: input.services
+    };
+  }
+
+  // BLOCO ATÔMICO 3: COMPILADOR DE MODELO JURÍDICO E SOW
+  function compileDocument(state) {
+    const f = (n) => n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fleetDesc = state.fleet.groups.map(g => `${g.qty}x ${g.model}`).join(', ');
+    const m = state.metrics;
+
+    return `====================================================================
+MINUTA DE PLANEJAMENTO E CONTRATO (${state.meta.taxonomyId})
+Licença de Protótipo: ${state.meta.license} | Vigência: ${state.meta.months} meses
+Contratante: ${state.meta.client}
+Contratada: RJS Manutenção
+Escopo da Frota (${state.fleet.totalVehicles} máq.): ${fleetDesc}
+====================================================================
+
+1. VALOR MENSAL EQUIVALENTE POR MÁQUINA
+- Visitas Periódicas (${m.events.visitAnnualEvents}x/ano na frota): R$ ${f(m.visitMonthlyPerMachine)}
+- Corretivas W1 (${state.rawRates.w1.count}x/máq/ano | Total: ${m.events.w1AnnualEvents}/ano): R$ ${f(m.w1MonthlyPerMachine)}
+- Corretivas W2 (${state.rawRates.w2.count}x/máq/ano | Total: ${m.events.w2AnnualEvents}/ano): R$ ${f(m.w2MonthlyPerMachine)}
+- Preventivas W3 (${state.rawRates.w3.count}x/máq/ano | Total: ${m.events.w3AnnualEvents}/ano = ${m.events.w3AnnualHours}h): R$ ${f(m.w3MonthlyPerMachine)}
+- Provisão de Deslocamentos: R$ ${f(m.logisticsMonthlyPerMachine)}
+-> TOTAL MENSAL EQUIVALENTE POR MÁQUINA: R$ ${f(m.equivalentMonthlyPerMachine)}
+
+2. RESUMO FINANCEIRO DA FROTA (BASELINE MRR / ARR)
+- Receita Mensal do Contrato (MRR): R$ ${f(m.MRR)}
+- Receita Anual do Contrato (ARR): R$ ${f(m.ARR)}
+- Receita Anual por Máquina: R$ ${f(m.annualPerMachine)}
+- Provisão de Deslocamento: R$ ${f( m.ARR ? (m.annualLogistics / state.meta.months) : 0 )}/mês (R$ ${f(m.annualLogistics)}/ano)
+
+3. RESSALVAS COMERCIAIS E ESCOPO TÉCNICO (WBS: MEC/HID/ELE/ELT/AUT)
+- W1: R$ ${f(state.rawRates.w1.val)} por intervenção (${state.rawRates.w1.count} previstas por máquina/ano).
+- W3: R$ ${f(state.rawRates.w3.val)} por intervenção (${state.rawRates.w3.count} previstas por máquina/ano), mais materiais variáveis.
+- W2: R$ ${f(state.rawRates.w2.val)} por ocorrência (${m.w2Included ? 'Incluída no pacote fixo conforme quantidade acima' : 'Cobrada sob demanda / excluída do valor fixo anual'}).
+- Os valores apresentados são de faturamento comercial bruto, não de lucro líquido.
+- Reajuste anual pelo índice IGP-M/IPCA conforme Lei 10.192/2001.
+====================================================================`;
+  }
+
+  function runKernel() {
+    const input = {
+      taxId: document.getElementById('taxId').value,
+      clientName: document.getElementById('clientName').value,
+      months: parseInt(document.getElementById('months').value) || 12,
+      logisticsMonthly: parseFloat(document.getElementById('logisticsMonthly').value) || 0,
+      fleet: fleetGroups,
+      services: {
+        visit: { val: parseFloat(document.getElementById('valVisit').value) || 0, count: parseInt(document.getElementById('cntVisit').value) || 0 },
+        w1: { val: parseFloat(document.getElementById('valW1').value) || 0, count: parseInt(document.getElementById('cntW1').value) || 0 },
+        w2: { val: parseFloat(document.getElementById('valW2').value) || 0, count: parseInt(document.getElementById('cntW2').value) || 0 },
+        w3: { val: parseFloat(document.getElementById('valW3').value) || 0, count: parseInt(document.getElementById('cntW3').value) || 0 }
+      }
+    };
+    const state = computeEngineState(input);
+    document.getElementById('contractOutput').textContent = compileDocument(state);
+    document.getElementById('jsonOutput').textContent = JSON.stringify(state, null, 2);
+  }
+
+  function toggleJson() {
+    const el = document.getElementById('jsonOutput');
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  }
+
+  renderFleetInputs();
+  runKernel();
+</script>
+</body>
+  </html>
